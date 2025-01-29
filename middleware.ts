@@ -1,31 +1,21 @@
-// middleware.ts
-import { authMiddleware } from "@clerk/nextjs";
-import { NextResponse } from "next/server";
+import { clerkMiddleware } from "@clerk/nextjs/server";
 
-// This example protects all routes including api/trpc routes
-// Please edit this to allow other routes to be public as needed.
-export default authMiddleware({
+export default clerkMiddleware({
+  
   publicRoutes: [
-    "/",
-    "/events/:id",
+    '/',
+    '/events/:id',
+    '/api/webhook/clerk',
+    '/api/webhook/stripe',
+    '/api/uploadthing'
   ],
   ignoredRoutes: [
-    "/api/webhook/clerk",
-    "/api/webhook/stripe",
-    "/api/uploadthing"
+    '/api/webhook/clerk',
+    '/api/webhook/stripe',
+    '/api/uploadthing'
   ]
 });
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public (public files)
-     */
-    "/((?!_next/static|_next/image|favicon.ico|public).*)",
-  ],
-  runtime: "experimental-edge", // Add this line
+  matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
 };

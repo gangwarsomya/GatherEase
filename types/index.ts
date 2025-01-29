@@ -126,16 +126,16 @@ export type CreateUserParams = {
   }
   
   export type GetOrdersByUserParams = {
-    userId: string | null
+    userId: string | " "
     limit?: number
-    page: string | number | null
+    page: string | number | " "
   }
   
   // ====== URL QUERY PARAMS
   export type UrlQueryParams = {
     params: string
     key: string
-    value: string | null
+    value: string | " "
   }
   
   export type RemoveUrlQueryParams = {

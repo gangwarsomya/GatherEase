@@ -2,21 +2,31 @@
 import { clerkMiddleware } from '@clerk/nextjs/server'
  
 export default clerkMiddleware({
-  publicRoutes: [
-    "/",
-    "/events/:id",
-    "/api/webhook/clerk",
-    "/api/webhook/stripe",
-    "/api/uploadthing"
-  ],
+  afterAuth(auth, req) {
+    // Public routes that don't require authentication
+    const publicRoutes = ["/", "/events/:id"];
+    const isPublicRoute = publicRoutes.some((route) => 
+      req.nextUrl.pathname === route || 
+      req.nextUrl.pathname.match(new RegExp(`^${route.replace(/:id/, '[^/]+')}$`))
+    );
+
+    if (isPublicRoute) {
+      return;
+    }
+
+    // If the user is not signed in and the route is private, redirect them to sign in
+    if (!auth.userId) {
+      const signInUrl = new URL('/sign-in', req.url);
+      return Response.redirect(signInUrl);
+    }
+  },
   ignoredRoutes: [
     "/api/webhook/clerk",
     "/api/webhook/stripe",
     "/api/uploadthing"
   ]
 });
- 
-// This example protects all routes including api/trpc routes
+
 export const config = {
   matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
 };

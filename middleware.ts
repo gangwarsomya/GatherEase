@@ -1,25 +1,13 @@
 // middleware.ts
-import { clerkMiddleware } from '@clerk/nextjs/server'
+import { authMiddleware } from "@clerk/nextjs";
  
-export default clerkMiddleware({
-  afterAuth(auth, req) {
-    // Public routes that don't require authentication
-    const publicRoutes = ["/", "/events/:id"];
-    const isPublicRoute = publicRoutes.some((route) => 
-      req.nextUrl.pathname === route || 
-      req.nextUrl.pathname.match(new RegExp(`^${route.replace(/:id/, '[^/]+')}$`))
-    );
-
-    if (isPublicRoute) {
-      return;
-    }
-
-    // If the user is not signed in and the route is private, redirect them to sign in
-    if (!auth.userId) {
-      const signInUrl = new URL('/sign-in', req.url);
-      return Response.redirect(signInUrl);
-    }
-  },
+export default authMiddleware({
+  // Define public routes that don't require authentication
+  publicRoutes: [
+    "/",
+    "/events/:id",
+  ],
+  // Define routes that should bypass middleware completely
   ignoredRoutes: [
     "/api/webhook/clerk",
     "/api/webhook/stripe",
@@ -28,5 +16,5 @@ export default clerkMiddleware({
 });
 
 export const config = {
-  matcher: ["/((?!.*\\..*|_next).*)", "/", "/(api|trpc)(.*)"],
+  matcher: ['/((?!.+\\.[\\w]+$|_next).*)', '/', '/(api|trpc)(.*)'],
 };

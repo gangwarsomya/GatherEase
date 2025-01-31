@@ -1,8 +1,10 @@
 'use server'
 
+import mongoose from 'mongoose';
+
 import { revalidatePath } from 'next/cache'
 
-import { connectToDatabase } from '@/lib/database'
+import { connectToDatabase } from '../database';
 import Event from '@/lib/database/models/event.model'
 import User from '@/lib/database/models/user.model'
 import Category from '@/lib/database/models/category.model'
@@ -30,20 +32,30 @@ const populateEvent = (query: any) => {
 // CREATE
 export async function createEvent({ userId, event, path }: CreateEventParams) {
   try {
-    await connectToDatabase()
+    await connectToDatabase();
 
-    const organizer = await User.findById(userId)
-    if (!organizer) throw new Error('Organizer not found')
+    console.log("User ID:", userId);
+    if (!mongoose.Types.ObjectId.isValid(userId)) {
+      throw new Error("Invalid user ID format");
+    }
 
-    const newEvent = await Event.create({ ...event, category: event.categoryId, organizer: userId })
-    revalidatePath(path)
+    const organizer = await User.findById(new mongoose.Types.ObjectId(userId));
+    if (!organizer) throw new Error("Organizer not found");
 
-    return JSON.parse(JSON.stringify(newEvent))
+    console.log("Creating event with data:", event);
+    const newEvent = await Event.create({
+      ...event,
+      category: event.categoryId,
+      organizer: userId,
+    });
+
+    revalidatePath(path);
+    return JSON.parse(JSON.stringify(newEvent));
   } catch (error) {
-    handleError(error)
+    console.error("Error creating event:", error);
+    return { success: false, message: error.message };
   }
 }
-
 // GET ONE EVENT BY ID
 export async function getEventById(eventId: string) {
   try {
